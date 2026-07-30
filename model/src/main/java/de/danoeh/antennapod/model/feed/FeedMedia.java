@@ -525,6 +525,13 @@ public class FeedMedia implements Playable {
         return getLocalFileUrl() + ".transcript";
     }
 
+    public String getSummaryFileUrl() {
+        if (getLocalFileUrl() == null) {
+            return null;
+        }
+        return getLocalFileUrl() + ".summary";
+    }
+
     public void setTranscript(Transcript t) {
         if (item == null)  {
             return;

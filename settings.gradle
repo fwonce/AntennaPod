@@ -6,6 +6,9 @@ pluginManagement {
         mavenLocal()
     }
 }
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.10.0'
+}
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -57,5 +60,6 @@ include ':ui:i18n'
 include ':ui:notifications'
 include ':ui:preferences'
 include ':ui:statistics'
+include ':ui:summary'
 include ':ui:widget'
 include ':ui:transcript'

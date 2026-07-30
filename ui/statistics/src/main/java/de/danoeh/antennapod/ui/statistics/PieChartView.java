@@ -1,6 +1,5 @@
 package de.danoeh.antennapod.ui.statistics;
 
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -11,16 +10,12 @@ import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.animation.DecelerateInterpolator;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 
 public class PieChartView extends AppCompatImageView {
-    private static final long ANIMATION_DURATION = 400L;
-    private static final long ANIMATION_START_DELAY = 200L;
     private PieChartDrawable drawable;
-    private ValueAnimator animator;
 
     public PieChartView(@NonNull Context context) {
         super(context);
@@ -48,20 +43,6 @@ public class PieChartView extends AppCompatImageView {
      */
     public void setData(PieChartData data) {
         drawable.data = data;
-        if (drawable.animationProgress == 0f) {
-            if (animator != null) {
-                animator.cancel();
-            }
-            animator = ValueAnimator.ofFloat(0f, 1f);
-            animator.setDuration(ANIMATION_DURATION);
-            animator.setStartDelay(ANIMATION_START_DELAY);
-            animator.setInterpolator(new DecelerateInterpolator());
-            animator.addUpdateListener(animation -> {
-                drawable.animationProgress = (float) animation.getAnimatedValue();
-                drawable.invalidateSelf();
-            });
-            animator.start();
-        }
     }
 
     @Override
@@ -114,7 +95,6 @@ public class PieChartView extends AppCompatImageView {
     private static class PieChartDrawable extends Drawable {
         private static final float PADDING_DEGREES = 3f;
         private PieChartData data;
-        private float animationProgress = 0f;
         private final Paint paint;
 
         private PieChartDrawable() {
@@ -142,18 +122,14 @@ public class PieChartView extends AppCompatImageView {
                 paint.setColor(data.getColorOfItem(i));
                 float padding = i == 0 ? PADDING_DEGREES / 2 : PADDING_DEGREES;
                 float sweepAngle = (180f - PADDING_DEGREES) * data.getPercentageOfItem(i);
-                float drawnSweepAngle = (sweepAngle - padding) * animationProgress;
-                float sliceCenter = startAngle + padding + (sweepAngle - padding) / 2f;
-                canvas.drawArc(arcBounds, sliceCenter - drawnSweepAngle / 2f, drawnSweepAngle, false, paint);
+                canvas.drawArc(arcBounds, startAngle + padding, sweepAngle - padding, false, paint);
                 startAngle = startAngle + sweepAngle;
             }
 
             paint.setColor(Color.GRAY);
             float sweepAngle = 360 - startAngle - PADDING_DEGREES / 2;
             if (sweepAngle > PADDING_DEGREES) {
-                float drawnSweepAngle = (sweepAngle - PADDING_DEGREES) * animationProgress;
-                float sliceCenter = startAngle + PADDING_DEGREES + (sweepAngle - PADDING_DEGREES) / 2f;
-                canvas.drawArc(arcBounds, sliceCenter - drawnSweepAngle / 2f, drawnSweepAngle, false, paint);
+                canvas.drawArc(arcBounds, startAngle + PADDING_DEGREES, sweepAngle - PADDING_DEGREES, false, paint);
             }
         }
 

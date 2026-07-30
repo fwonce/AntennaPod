@@ -97,6 +97,8 @@ public class ItemFragment extends Fragment {
     private long itemId;
     private FeedItem item;
     private String webviewData;
+    private String summaryText;
+    private boolean summaryExpanded = false;
 
     private ItemActionButton actionButton1;
     private ItemActionButton actionButton2;
@@ -247,6 +249,28 @@ public class ItemFragment extends Fragment {
                     "https://127.0.0.1", webviewData, "text/html", "utf-8", "about:blank");
         }
         updateAppearance();
+        updateSummary();
+    }
+
+    private void updateSummary() {
+        if (summaryText != null && !summaryText.trim().isEmpty()) {
+            viewBinding.summaryContainer.setVisibility(View.VISIBLE);
+            viewBinding.summaryText.setText(summaryText);
+            viewBinding.summaryText.setVisibility(summaryExpanded ? View.VISIBLE : View.GONE);
+            viewBinding.summaryToggleIcon.setImageResource(
+                    summaryExpanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more);
+            viewBinding.summaryHeader.setOnClickListener(v -> {
+                summaryExpanded = !summaryExpanded;
+                viewBinding.summaryText.setVisibility(summaryExpanded ? View.VISIBLE : View.GONE);
+                viewBinding.summaryToggleIcon.setImageResource(
+                        summaryExpanded ? R.drawable.ic_expand_less : R.drawable.ic_expand_more);
+                viewBinding.summaryHeader.setContentDescription(
+                        getString(summaryExpanded ? R.string.collapse_summary : R.string.expand_summary));
+            });
+            viewBinding.summaryHeader.setContentDescription(getString(R.string.expand_summary));
+        } else {
+            viewBinding.summaryContainer.setVisibility(View.GONE);
+        }
     }
 
     private void updateAppearance() {
@@ -425,6 +449,11 @@ public class ItemFragment extends Fragment {
             DBReader.loadDescriptionOfFeedItem(feedItem);
             ShownotesCleaner t = new ShownotesCleaner(context, feedItem.getDescription(), duration);
             webviewData = t.processShownotes();
+
+            // Load AI summary if available
+            if (feedItem.getMedia() != null) {
+                summaryText = de.danoeh.antennapod.ui.summary.SummaryUtils.loadSummary(feedItem.getMedia());
+            }
         }
         return feedItem;
     }

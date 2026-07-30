@@ -1,6 +1,5 @@
 package de.danoeh.antennapod.ui.statistics.years;
 
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -10,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.animation.LinearInterpolator;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -20,10 +18,7 @@ import de.danoeh.antennapod.ui.common.ThemeUtils;
 import java.util.List;
 
 public class BarChartView extends AppCompatImageView {
-    private static final long ANIMATION_DURATION = 400L;
-    private static final long ANIMATION_START_DELAY = 200L;
     private BarChartDrawable drawable;
-    private ValueAnimator animator;
 
     public BarChartView(Context context) {
         super(context);
@@ -55,27 +50,12 @@ public class BarChartView extends AppCompatImageView {
         for (DBReader.MonthlyStatisticsItem item : data) {
             drawable.maxValue = Math.max(drawable.maxValue, item.getTimePlayed());
         }
-        if (drawable.animationProgress == 0f) {
-            if (animator != null) {
-                animator.cancel();
-            }
-            animator = ValueAnimator.ofFloat(0f, 1f);
-            animator.setDuration(ANIMATION_DURATION);
-            animator.setStartDelay(ANIMATION_START_DELAY);
-            animator.setInterpolator(new LinearInterpolator());
-            animator.addUpdateListener(animation -> {
-                drawable.animationProgress = (float) animation.getAnimatedValue();
-                drawable.invalidateSelf();
-            });
-            animator.start();
-        }
     }
 
     private class BarChartDrawable extends Drawable {
         private static final long ONE_HOUR = 3600000L;
         private List<DBReader.MonthlyStatisticsItem> data;
         private long maxValue = 1;
-        private float animationProgress = 0f;
         private final Paint paintBars;
         private final Paint paintGridLines;
         private final Paint paintGridText;
@@ -129,9 +109,7 @@ public class BarChartView extends AppCompatImageView {
                 }
 
                 float valuePercentage = (float) Math.max(0.005, (float) data.get(i).getTimePlayed() / maxValue);
-                float barStart = 0.6f * i / Math.max(1, data.size() - 1);
-                float barProgress = Math.min(1f, Math.max(0f, (animationProgress - barStart) / 0.4f));
-                float y = (1 - valuePercentage * barProgress) * barHeight;
+                float y = (1 - valuePercentage) * barHeight;
                 canvas.drawRect(x, y, x + stepSize * 0.95f, barHeight, paintBars);
             }
 
